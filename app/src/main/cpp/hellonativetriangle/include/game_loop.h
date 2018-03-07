@@ -22,7 +22,7 @@ public:
     void Start();
     void Stop();
 
-    void ChangeRenderer(unique_ptr<Renderer> renderer);
+    void ChangeRenderer(unique_ptr<Renderer>);
 private:
     void Loop();
 
@@ -41,5 +41,5 @@ private:
 
     bool started_once_ = false;
 
-    static void thread_callback_(GameLoop *gameLoop);
+    static void thread_callback_(GameLoop *);
 };

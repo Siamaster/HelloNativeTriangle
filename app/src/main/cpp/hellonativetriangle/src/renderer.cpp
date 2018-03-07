@@ -24,7 +24,7 @@ void Renderer::Initialize() {
         LOG_ERROR("eglGetDisplay() returned error %d", eglGetError());
         return;
     }
-    if (!eglInitialize(display_, nullptr, nullptr)) {
+    if (eglInitialize(display_, nullptr, nullptr) == EGL_FALSE) {
         LOG_ERROR("eglInitialize() returned error %d", eglGetError());
         return;
     }
@@ -40,7 +40,7 @@ void Renderer::Initialize() {
     EGLConfig config;
     EGLint numConfigs;
 
-    if (!eglChooseConfig(display_, attribs, &config, 1, &numConfigs)) {
+    if (eglChooseConfig(display_, attribs, &config, 1, &numConfigs) == EGL_FALSE) {
         LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
         Destroy();
         return;
@@ -48,31 +48,31 @@ void Renderer::Initialize() {
 
     EGLint format;
 
-    if (!eglGetConfigAttrib(display_, config, EGL_NATIVE_VISUAL_ID, &format)) {
+    if (eglGetConfigAttrib(display_, config, EGL_NATIVE_VISUAL_ID, &format) == EGL_FALSE) {
         LOG_ERROR("eglGetConfigAttrib() returned error %d", eglGetError());
         Destroy();
         return;
     }
 
     eglChooseConfig(display_, attribs, &config, 1, &numConfigs);
-    const EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
+    const EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
 
     context_ = eglCreateContext(display_, config, EGL_NO_CONTEXT, context_attribs);
 
-    if (!context_) {
+    if (context_ == nullptr) {
         LOG_ERROR("eglCreateContext() returned error %d", eglGetError());
         Destroy();
         return;
     }
     surface_ = eglCreateWindowSurface(display_, config, window_.get(), nullptr);
 
-    if (!surface_) {
+    if (surface_ == nullptr) {
         LOG_ERROR("eglCreateWindowSurface() returned error %d", eglGetError());
         Destroy();
         return;
     }
 
-    if (!eglMakeCurrent(display_, surface_, surface_, context_)) {
+    if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_FALSE) {
         LOG_ERROR("eglMakeCurrent() returned error %d", eglGetError());
         Destroy();
         return;
@@ -118,12 +118,15 @@ void Renderer::DrawFrame() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    if (!eglSwapBuffers(display_, surface_)) {
+    if (eglSwapBuffers(display_, surface_) == EGL_FALSE) {
         LOG_ERROR("eglSwapBuffers() returned error %d", eglGetError());
     }
 }
 
 void Renderer::Destroy() {
+    if (display_ == EGL_NO_DISPLAY) {
+        return;
+    }
     eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     eglDestroyContext(display_, context_);
     eglDestroySurface(display_, surface_);

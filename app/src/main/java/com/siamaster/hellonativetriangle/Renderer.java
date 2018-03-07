@@ -5,19 +5,19 @@ import android.view.SurfaceHolder;
 
 public class Renderer implements SurfaceHolder.Callback {
 
-    private long mNativeHandle; // Accessed from JNI
-    private SurfaceHolder mSurfaceHolder;
-
     static {
         System.loadLibrary("jni");
         classInit();
     }
 
+    private long mNativeHandle; // Accessed from JNI
+    private SurfaceHolder mSurfaceHolder;
+
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         mSurfaceHolder = surfaceHolder;
         mNativeHandle = create(surfaceHolder.getSurface());
-        nativeStart();
+        start();
     }
 
     @Override
@@ -37,6 +37,6 @@ public class Renderer implements SurfaceHolder.Callback {
     private native void destroy();
     private native long create(Surface surface);
     private native void changeSurface(Surface surface);
-    private native void nativeStart();
+    private native void start();
     private native static void classInit();
 }

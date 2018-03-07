@@ -30,6 +30,6 @@ JNI_FUNCTION(void, changeSurface)(JNIEnv *env, jobject obj, jobject surface) {
     THIS->ChangeRenderer(UNIQUE_PTR_RENDERER(env, surface));
 }
 
-JNI_FUNCTION(void, nativeStart)(JNIEnv *env, jobject obj) {
+JNI_FUNCTION(void, start)(JNIEnv *env, jobject obj) {
     THIS->Start();
 }

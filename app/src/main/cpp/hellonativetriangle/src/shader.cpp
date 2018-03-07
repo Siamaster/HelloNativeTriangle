@@ -1,11 +1,8 @@
+#include "shader.h"
+
 #include "logger.h"
 
-#include <GLES3/gl3.h>
-#include <tuple>
-
 static const char *kLogTag = "Shader";
-
-using namespace std;
 
 namespace shader {
 
@@ -17,7 +14,7 @@ namespace shader {
         glCompileShader(shader);
         GLint success;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
+        if (success == 0) {
             char info[info_buffer_size];
             glGetShaderInfoLog(shader, info_buffer_size, nullptr, info);
             LOG_ERROR("Shader error: %s", info);
@@ -32,7 +29,7 @@ namespace shader {
         glLinkProgram(program);
         GLint success;
         glGetProgramiv(program, GL_LINK_STATUS, &success);
-        if (!success) {
+        if (success == 0) {
             char info[info_buffer_size];
             glGetShaderInfoLog(program, info_buffer_size, nullptr, info);
             LOG_ERROR("Shader error: %s", info);

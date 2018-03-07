@@ -36,8 +36,8 @@ void GameLoop::ChangeRenderer(unique_ptr<Renderer> renderer) {
 void GameLoop::Loop() {
     while (true) {
         if (msg_ == Message::kInitialize) {
-            renderer_->Initialize();
             mutex_.lock();
+            renderer_->Initialize();
             msg_ = Message::kPlay;
             mutex_.unlock();
         } else if (msg_ == Message::kStop) {

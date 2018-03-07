@@ -1,4 +1,5 @@
 #include <jni.h>
+
 #include "file.h"
 
 #include <android/asset_manager_jni.h>
