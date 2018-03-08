@@ -42,7 +42,7 @@ void Renderer::Initialize() {
     if (eglChooseConfig(display_, attribs, &config, 1, &numConfigs) == EGL_FALSE) {
         LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
         Destroy();
-        return;
+        exit(1);
     }
 
     EGLint format;
@@ -50,7 +50,7 @@ void Renderer::Initialize() {
     if (eglGetConfigAttrib(display_, config, EGL_NATIVE_VISUAL_ID, &format) == EGL_FALSE) {
         LOG_ERROR("eglGetConfigAttrib() returned error %d", eglGetError());
         Destroy();
-        return;
+        exit(1);
     }
 
     eglChooseConfig(display_, attribs, &config, 1, &numConfigs);
@@ -61,27 +61,27 @@ void Renderer::Initialize() {
     if (context_ == nullptr) {
         LOG_ERROR("eglCreateContext() returned error %d", eglGetError());
         Destroy();
-        return;
+        exit(1);
     }
     surface_ = eglCreateWindowSurface(display_, config, window_.get(), nullptr);
 
     if (surface_ == nullptr) {
         LOG_ERROR("eglCreateWindowSurface() returned error %d", eglGetError());
         Destroy();
-        return;
+        exit(1);
     }
 
     if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_FALSE) {
         LOG_ERROR("eglMakeCurrent() returned error %d", eglGetError());
         Destroy();
-        return;
+        exit(1);
     }
 
     if (!eglQuerySurface(display_, surface_, EGL_WIDTH, &surface_width_) ||
         !eglQuerySurface(display_, surface_, EGL_HEIGHT, &surface_height_)) {
         LOG_ERROR("eglQuerySurface() returned error %d", eglGetError());
         Destroy();
-        return;
+        exit(1);
     }
 
     // Initialize matrices
@@ -103,7 +103,7 @@ void Renderer::Initialize() {
     if (!shader_compiled) {
         LOG_ERROR("Couldn't create shader program");
         Destroy();
-        return;
+        exit(1);
     }
 
     glUseProgram(shader_program_);
