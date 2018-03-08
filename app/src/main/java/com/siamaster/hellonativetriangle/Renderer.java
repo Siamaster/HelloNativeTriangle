@@ -11,21 +11,26 @@ public class Renderer implements SurfaceHolder.Callback {
     }
 
     private long mNativeHandle; // Accessed from JNI
-    private SurfaceHolder mSurfaceHolder;
+
+    public void resume() {
+        if (mNativeHandle != 0) {
+            nativeResume();
+        }
+    }
+
+    public void pause() {
+        if (mNativeHandle != 0) {
+            nativePause();
+        }
+    }
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        mSurfaceHolder = surfaceHolder;
         mNativeHandle = create(surfaceHolder.getSurface());
-        start();
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {
-        if (surfaceHolder != mSurfaceHolder) {
-            mSurfaceHolder = surfaceHolder;
-            changeSurface(surfaceHolder.getSurface());
-        }
     }
 
     @Override
@@ -37,6 +42,7 @@ public class Renderer implements SurfaceHolder.Callback {
     private native void destroy();
     private native long create(Surface surface);
     private native void changeSurface(Surface surface);
-    private native void start();
+    private native void nativeResume();
+    private native void nativePause();
     private native static void classInit();
 }

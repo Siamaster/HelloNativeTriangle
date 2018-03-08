@@ -19,8 +19,8 @@ public:
     GameLoop(const GameLoop &) = delete;
     GameLoop &operator=(const GameLoop &) = delete;
 
-    void Start();
-    void Stop();
+    void Play();
+    void Pause();
 
     void ChangeRenderer(unique_ptr<Renderer>);
 private:
@@ -36,7 +36,7 @@ private:
     } msg_ = Message::kInitialize;
 
     mutex mutex_{};
-    condition_variable condition_var{};
+    condition_variable condition_var_{};
     thread thread_{};
 
     bool started_once_ = false;

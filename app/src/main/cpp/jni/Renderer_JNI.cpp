@@ -23,6 +23,7 @@ JNI_FUNCTION(void, destroy)(JNIEnv *env, jobject obj) {
 
 JNI_FUNCTION(jlong, create)(JNIEnv *env, jobject, jobject surface) {
     auto *self = new GameLoop(UNIQUE_PTR_RENDERER(env, surface));
+    self->Play();
     return jlong(self);
 }
 
@@ -30,6 +31,10 @@ JNI_FUNCTION(void, changeSurface)(JNIEnv *env, jobject obj, jobject surface) {
     THIS->ChangeRenderer(UNIQUE_PTR_RENDERER(env, surface));
 }
 
-JNI_FUNCTION(void, start)(JNIEnv *env, jobject obj) {
-    THIS->Start();
+JNI_FUNCTION(void, nativeResume)(JNIEnv *env, jobject obj) {
+    THIS->Play();
+}
+
+JNI_FUNCTION(void, nativePause)(JNIEnv *env, jobject obj) {
+    THIS->Pause();
 }

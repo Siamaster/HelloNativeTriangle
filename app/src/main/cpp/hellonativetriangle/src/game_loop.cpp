@@ -4,11 +4,14 @@ GameLoop::~GameLoop() {
     mutex_.lock();
     msg_ = Message::kStop;
     mutex_.unlock();
-    condition_var.notify_all();
+    condition_var_.notify_all();
     thread_.join();
 }
 
-void GameLoop::Start() {
+void GameLoop::Play() {
+    if (msg_ == Message::kPlay) {
+        return;
+    }
     if (!started_once_) {
         thread_ = thread{thread_callback_, this};
         started_once_ = true;
@@ -17,10 +20,10 @@ void GameLoop::Start() {
     mutex_.lock();
     msg_ = Message::kPlay;
     mutex_.unlock();
-    condition_var.notify_all();
+    condition_var_.notify_all();
 }
 
-void GameLoop::Stop() {
+void GameLoop::Pause() {
     mutex_.lock();
     msg_ = Message::kPause;
     mutex_.unlock();
@@ -35,21 +38,26 @@ void GameLoop::ChangeRenderer(unique_ptr<Renderer> renderer) {
 
 void GameLoop::Loop() {
     while (true) {
-        if (msg_ == Message::kInitialize) {
-            mutex_.lock();
-            renderer_->Initialize();
-            msg_ = Message::kPlay;
-            mutex_.unlock();
-        } else if (msg_ == Message::kStop) {
-            mutex_.lock();
-            renderer_->Destroy();
-            mutex_.unlock();
-            return;
-        }
 
-        if (msg_ == Message::kPause) {
-            unique_lock<mutex> lock{mutex_};
-            condition_var.wait(lock);
+        switch (msg_) {
+            case Message::kInitialize :
+                mutex_.lock();
+                renderer_->Initialize();
+                msg_ = Message::kPlay;
+                mutex_.unlock();
+                break;
+            case Message::kPause : {
+                unique_lock<mutex> lock{mutex_};
+                condition_var_.wait(lock);
+                break;
+            }
+            case Message::kStop :
+                mutex_.lock();
+                renderer_->Destroy();
+                mutex_.unlock();
+                return;
+            default:
+                break;
         }
 
         if (msg_ == Message::kPlay) {

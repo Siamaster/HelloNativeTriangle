@@ -10,7 +10,7 @@ set(SOURCE_FILES
         src/shader.cpp)
 
 add_library(hellonativetriangle ${SOURCE_FILES})
-target_link_libraries(hellonativetriangle EGL GLESv3)
+target_link_libraries(hellonativetriangle EGL GLESv3 glm)
 target_include_directories(hellonativetriangle PUBLIC include)
 
 # Creates a shader folder in the Android assets directory and puts the shader files there.

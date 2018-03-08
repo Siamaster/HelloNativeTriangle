@@ -4,5 +4,7 @@ set(SOURCE_FILES
 
 add_library(jni SHARED ${SOURCE_FILES})
 
-target_link_libraries(jni -Wl,-landroid,-llog
-        hellonativetriangle)
+target_link_libraries(jni
+        android
+        hellonativetriangle
+        log)

@@ -2,8 +2,6 @@
 
 #include "logger.h"
 
-static const char *kLogTag = "Shader";
-
 namespace shader {
 
     static const int info_buffer_size = 512;

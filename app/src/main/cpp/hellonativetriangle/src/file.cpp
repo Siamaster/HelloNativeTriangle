@@ -2,13 +2,10 @@
 
 #include "logger.h"
 
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <sstream>
-
-#include <cstdlib>
-
-static const char *kLogTag = "File";
 
 namespace file {
 

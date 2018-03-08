@@ -3,6 +3,8 @@
 #include <android/native_window.h>
 #include <EGL/egl.h> // must come after native include
 #include <GLES/gl.h>
+#include <glm/glm.hpp>
+
 #include <functional>
 #include <memory>
 
@@ -30,6 +32,11 @@ private:
     EGLSurface surface_ = nullptr;
     EGLContext context_ = nullptr;
 
-    GLuint shader_program_;
-    GLuint vertex_array_;
+    EGLint surface_width_ = 0;
+    EGLint surface_height_ = 0;
+
+    GLuint shader_program_ = 0;
+    GLuint vertex_array_ = 0;
+
+    glm::mat4 model_{};
 };
