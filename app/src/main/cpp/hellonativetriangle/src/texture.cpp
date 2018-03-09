@@ -2,7 +2,6 @@
 
 #include <stb_image.h>
 
-
 namespace texture {
     GLuint LoadPNG(const vector<char> &data) {
         GLuint texture;
@@ -13,7 +12,7 @@ namespace texture {
         stbi_set_flip_vertically_on_load(1);
 
         auto buffer = data.data();
-        auto image = stbi_load_from_memory((const stbi_uc *)(buffer), sizeof(char) * data.size(), &width, &height, &channels, 0);
+        auto image = stbi_load_from_memory((const stbi_uc *) (buffer), sizeof(char) * data.size(), &width, &height, &channels, 0);
 
         if (image == nullptr) {
             return 0;
