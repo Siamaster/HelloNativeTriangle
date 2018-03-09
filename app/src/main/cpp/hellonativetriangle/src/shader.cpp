@@ -1,11 +1,6 @@
+#include "shader.h"
+
 #include "logger.h"
-
-#include <GLES3/gl3.h>
-
-#include <tuple>
-#include <vector>
-
-using namespace std;
 
 namespace shader {
 

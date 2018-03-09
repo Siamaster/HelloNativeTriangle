@@ -2,10 +2,9 @@
 
 #include <stb_image.h>
 
-using namespace std;
 
 namespace texture {
-    GLuint LoadPNG(const std::vector<char> &data) {
+    GLuint LoadPNG(const vector<char> &data) {
         GLuint texture;
         glGenTextures(1, &texture);
 
