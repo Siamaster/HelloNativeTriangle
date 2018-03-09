@@ -2,7 +2,7 @@
 
 #include <android/native_window.h>
 #include <EGL/egl.h> // must come after native include
-#include <GLES/gl.h>
+#include <GLES3/gl3.h>
 #include <glm/glm.hpp>
 
 #include <functional>
@@ -35,6 +35,7 @@ private:
     EGLint surface_width_ = 0;
     EGLint surface_height_ = 0;
 
+    GLuint texture_ = 0;
     GLuint shader_program_ = 0;
     GLuint vertex_array_ = 0;
 

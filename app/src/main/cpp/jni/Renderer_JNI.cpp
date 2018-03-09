@@ -4,6 +4,7 @@
 
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
+
 #include <memory>
 
 #define JNI_FUNCTION(return_type, method_name) extern "C" JNIEXPORT return_type JNICALL Java_com_siamaster_hellonativetriangle_Renderer_##method_name

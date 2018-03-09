@@ -3,8 +3,8 @@
 #include "file.h"
 #include "logger.h"
 #include "shader.h"
+#include "texture.h"
 
-#include <GLES3/gl3.h>
 #include <glm/ext.hpp>
 
 using namespace std;
@@ -14,9 +14,7 @@ Renderer::~Renderer() {
 }
 
 void Renderer::Initialize() {
-
     // Initialize EGL
-
     display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
     if (display_ == EGL_NO_DISPLAY) {
@@ -39,10 +37,10 @@ void Renderer::Initialize() {
     EGLConfig config;
     EGLint numConfigs;
 
-    if (eglChooseConfig(display_, attribs, &config, 1, &numConfigs) == EGL_FALSE) {
+    if (eglChooseConfig(display_, (EGLint *)attribs, &config, 1, &numConfigs) == EGL_FALSE) {
         LOG_ERROR("eglChooseConfig() returned error %d", eglGetError());
         Destroy();
-        exit(1);
+        return;
     }
 
     EGLint format;
@@ -50,71 +48,83 @@ void Renderer::Initialize() {
     if (eglGetConfigAttrib(display_, config, EGL_NATIVE_VISUAL_ID, &format) == EGL_FALSE) {
         LOG_ERROR("eglGetConfigAttrib() returned error %d", eglGetError());
         Destroy();
-        exit(1);
+        return;
     }
 
     eglChooseConfig(display_, attribs, &config, 1, &numConfigs);
     const EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
 
-    context_ = eglCreateContext(display_, config, EGL_NO_CONTEXT, context_attribs);
+    context_ = eglCreateContext(display_, config, EGL_NO_CONTEXT, (EGLint *)(context_attribs));
 
     if (context_ == nullptr) {
         LOG_ERROR("eglCreateContext() returned error %d", eglGetError());
         Destroy();
-        exit(1);
+        return;
     }
     surface_ = eglCreateWindowSurface(display_, config, window_.get(), nullptr);
 
     if (surface_ == nullptr) {
         LOG_ERROR("eglCreateWindowSurface() returned error %d", eglGetError());
         Destroy();
-        exit(1);
+        return;
     }
 
     if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_FALSE) {
         LOG_ERROR("eglMakeCurrent() returned error %d", eglGetError());
         Destroy();
-        exit(1);
+        return;
     }
 
-    if (!eglQuerySurface(display_, surface_, EGL_WIDTH, &surface_width_) ||
-        !eglQuerySurface(display_, surface_, EGL_HEIGHT, &surface_height_)) {
+    if (eglQuerySurface(display_, surface_, EGL_WIDTH, &surface_width_) == EGL_FALSE ||
+        eglQuerySurface(display_, surface_, EGL_HEIGHT, &surface_height_) == EGL_FALSE) {
         LOG_ERROR("eglQuerySurface() returned error %d", eglGetError());
         Destroy();
-        exit(1);
+        return;
     }
 
     // Initialize matrices
 
-    float ratio = (float) glm::min(surface_width_, surface_height_) / glm::max(surface_width_, surface_height_);
+    float ratio = static_cast<float>(glm::min(surface_width_, surface_height_)) / glm::max(surface_width_, surface_height_);
     if (surface_width_ < surface_height_) {
         model_ = glm::scale(model_, glm::vec3(1.0f, ratio, 1.0f));
     } else {
         model_ = glm::scale(model_, glm::vec3(ratio, 1.0f, 1.0f));
     }
 
+    // Initialize texture
+
+    texture_ = texture::LoadPNG(file::Read("textures/illuminati.png"));
+
+    if (texture_ == 0) {
+        LOG_ERROR("Couldn't load texture");
+        Destroy();
+        exit(1);
+    }
+
     // Initialize shader
 
-    bool shader_compiled;
-    tie(shader_program_, shader_compiled) = shader::LoadShader(
-            file::ReadFile("shaders/vertex_shader.glsl").c_str(),
-            file::ReadFile("shaders/fragment_shader.glsl").c_str());
+    shader_program_ = shader::Load(
+            file::Read("shaders/vertex_shader.glsl"),
+            file::Read("shaders/fragment_shader.glsl")
+    );
 
-    if (!shader_compiled) {
+    if (shader_program_ == 0) {
         LOG_ERROR("Couldn't create shader program");
         Destroy();
         exit(1);
     }
 
     glUseProgram(shader_program_);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture_);
 
     // Initialize vertex array
 
     GLfloat vertices[] = {
-            // Position   Color
-            -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.5f, 0.0f, 0.0f, 1.0f
+            // Position   Texture coordinates
+            -0.5f, -0.5f, 0.0f, 0.0f,
+            0.5f, -0.5f, 1.0f, 0.0f,
+            0.0f, 0.5f, 0.5f, 1.0f
     };
 
     GLuint buffer;
@@ -126,13 +136,13 @@ void Renderer::Initialize() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), nullptr);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) (2 * sizeof(GLfloat)));
 }
 
 void Renderer::DrawFrame() {
-    glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     model_ = glm::rotate(model_, 0.01f, glm::vec3(0, 0, 1));

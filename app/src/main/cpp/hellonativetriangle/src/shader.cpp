@@ -1,27 +1,34 @@
-#include "shader.h"
-
 #include "logger.h"
+
+#include <GLES3/gl3.h>
+
+#include <tuple>
+#include <vector>
+
+using namespace std;
 
 namespace shader {
 
     static const int info_buffer_size = 512;
 
-    tuple<GLuint, bool> CompileShader(const GLchar *source, GLenum shader_type) {
-        auto shader = glCreateShader(shader_type);
-        glShaderSource(shader, 1, &source, nullptr);
+    GLuint Compile(const vector<char> &source, GLenum shader_type) {
+        GLuint shader = glCreateShader(shader_type);
+        const char* char_ptr_source = &source[0];
+        glShaderSource(shader, 1, &char_ptr_source, nullptr);
         glCompileShader(shader);
         GLint success;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (success == 0) {
             char info[info_buffer_size];
-            glGetShaderInfoLog(shader, info_buffer_size, nullptr, info);
+            glGetShaderInfoLog(shader, info_buffer_size, nullptr, (GLchar *) info);
             LOG_ERROR("Shader error: %s", info);
+            return 0;
         }
-        return make_tuple(shader, success != 0);
+        return shader;
     }
 
-    tuple<GLuint, bool> LinkProgram(GLuint vertex_shader, GLuint fragment_shader) {
-        auto program = glCreateProgram();
+    GLuint Link(GLuint vertex_shader, GLuint fragment_shader) {
+        GLuint program = glCreateProgram();
         glAttachShader(program, vertex_shader);
         glAttachShader(program, fragment_shader);
         glLinkProgram(program);
@@ -29,37 +36,36 @@ namespace shader {
         glGetProgramiv(program, GL_LINK_STATUS, &success);
         if (success == 0) {
             char info[info_buffer_size];
-            glGetShaderInfoLog(program, info_buffer_size, nullptr, info);
+            glGetShaderInfoLog(program, info_buffer_size, nullptr, (GLchar *) info);
             LOG_ERROR("Shader error: %s", info);
+            return 0;
         }
-        return make_tuple(program, success != 0);
+        return program;
     }
 
-    tuple<GLuint, bool> LoadShader(const char *vertex_source, const char *fragment_source) {
-        bool success;
-        GLuint vertex_shader;
-        tie(vertex_shader, success) = CompileShader(vertex_source, GL_VERTEX_SHADER);
-        if (!success) {
+    GLuint Load(const vector<char> &vertex_source, const vector<char> &fragment_source) {
+        GLuint vertex_shader = Compile(vertex_source, GL_VERTEX_SHADER);
+        if (vertex_shader == 0) {
             LOG_ERROR("Failed to compile vertex shader");
-            return make_tuple((GLuint) 0, false);
+            return 0;
         }
 
-        GLuint fragment_shader;
-        tie(fragment_shader, success) = CompileShader(fragment_source, GL_FRAGMENT_SHADER);
-        if (!success) {
+        GLuint fragment_shader = Compile(fragment_source, GL_FRAGMENT_SHADER);
+        if (fragment_shader == 0) {
             LOG_ERROR("Failed to compile fragment shader");
             glDeleteShader(vertex_shader);
-            return make_tuple((GLuint) 0, false);
+            return 0;
         }
 
-        GLuint program;
-        tie(program, success) = LinkProgram(vertex_shader, fragment_shader);
-        if (!success) {
+        GLuint program = Link(vertex_shader, fragment_shader);
+
+        if (program == 0) {
             LOG_ERROR("Failed to link program");
         }
 
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
-        return make_tuple(program, success);
+
+        return program;
     }
-}
+} // namespace shader

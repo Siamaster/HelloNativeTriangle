@@ -1,10 +1,11 @@
 #pragma once
 
 #include <GLES3/gl3.h>
-#include <tuple>
+
+#include <vector>
 
 using namespace std;
 
 namespace shader {
-    tuple<GLuint, bool> LoadShader(const char *vertex_source, const char *fragment_source);
+    GLuint Load(const vector<char> &vertex_source,const vector<char> &fragment_source);
 }
