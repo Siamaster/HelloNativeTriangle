@@ -1,6 +1,6 @@
 # HelloNativeTriangle
 
-Sample Android app for calling EGL from NDK.
+Sample Android app for calling EGL from NDK. Uses SurfaceView and creates the EGL context and rendering thread in native code.
 
 Libs:
 
